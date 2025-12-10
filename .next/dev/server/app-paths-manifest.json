@@ -1,7 +1,0 @@
-{
-  "/auth/login/page": "app/auth/login/page.js",
-  "/categories/page": "app/categories/page.js",
-  "/leaderboard/page": "app/leaderboard/page.js",
-  "/page": "app/page.js",
-  "/play/[category]/page": "app/play/[category]/page.js"
-}
