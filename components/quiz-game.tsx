@@ -24,8 +24,9 @@ export function QuizGame({ category, questions, userId }: QuizGameProps) {
   useEffect(() => {
     setCategory(category)
     // Shuffle questions
-    const shuffled = [...questions].sort(() => Math.random() - 0.5)
-    setQuestions(shuffled)
+    // const shuffled = [...questions].sort(() => Math.random() - 0.5)
+    // setQuestions(shuffled)
+    setQuestions(questions)
 
     return () => {
       resetGame()

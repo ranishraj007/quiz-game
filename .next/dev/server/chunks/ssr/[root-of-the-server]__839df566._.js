@@ -102,14 +102,19 @@ async function PlayPage({ params }) {
     if (!categoryData) {
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$quiz$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_$40$babel$2b$core$40$7$2e$28$2e$5_babel$2d$plugin$2d$react$2d$compiler$40$1$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["redirect"])("/categories");
     }
-    const { data: questions } = await supabase.from("questions").select("*").eq("category_id", categoryData.id).order("difficulty").limit(10);
+    const { data: questions } = await supabase.from("questions").select("*").eq("category_id", categoryData.id).order("difficulty");
+    // .limit(2)
+    const limitedQues = [
+        ...questions ?? []
+    ].sort(()=>Math.random() - 0.5);
+    const limited = limitedQues.slice(0, 10);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$quiz$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_$40$babel$2b$core$40$7$2e$28$2e$5_babel$2d$plugin$2d$react$2d$compiler$40$1$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$quiz$2f$components$2f$quiz$2d$game$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["QuizGame"], {
         category: categoryData,
-        questions: questions || [],
+        questions: limited || [],
         userId: user.id
     }, void 0, false, {
         fileName: "[project]/quiz/app/play/[category]/page.tsx",
-        lineNumber: 34,
+        lineNumber: 38,
         columnNumber: 10
     }, this);
 }

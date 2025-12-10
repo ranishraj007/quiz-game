@@ -29,7 +29,11 @@ export default async function PlayPage({
     .select("*")
     .eq("category_id", categoryData.id)
     .order("difficulty")
-    .limit(10)
+    // .limit(2)
 
-  return <QuizGame category={categoryData} questions={questions || []} userId={user.id} />
+  const limitedQues = [...(questions ?? [])].sort(() => Math.random() - 0.5);
+
+  const limited = limitedQues.slice(0, 10);
+
+  return <QuizGame category={categoryData} questions={limited || []} userId={user.id} />
 }

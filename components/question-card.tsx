@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useMemo } from "react"
 import { useGameStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -46,8 +46,10 @@ export function QuestionCard() {
     return null
   }
 
-  // Shuffle answers
-  const allAnswers = [currentQuestion.correct_answer, ...currentQuestion.wrong_answers].sort(() => Math.random() - 0.5)
+  // Shuffle answers only when question changes
+  const allAnswers = useMemo(() => {
+    return [currentQuestion.correct_answer, ...currentQuestion.wrong_answers].sort(() => Math.random() - 0.5)
+  }, [currentQuestion.id])
 
   const getAnswerStyle = (answer: string) => {
     if (!isAnswered) {
