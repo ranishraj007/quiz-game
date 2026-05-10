@@ -100,3 +100,11 @@ INSERT INTO public.achievements (code, name, description, icon, xp_reward) VALUE
   ('combo_builder', 'Combo Builder', 'Reach a streak of three correct answers.', 'flame', 100),
   ('point_hunter', 'Point Hunter', 'Score 5,000 total points.', 'trophy', 250)
 ON CONFLICT (code) DO NOTHING;
+
+DO $$
+BEGIN
+  IF to_regclass('public.leaderboard') IS NOT NULL THEN
+    ALTER VIEW public.leaderboard SET (security_invoker = true);
+  END IF;
+END
+$$;

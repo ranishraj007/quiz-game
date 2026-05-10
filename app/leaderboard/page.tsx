@@ -3,15 +3,41 @@ import { createClient } from "@/lib/supabase/server"
 import { Navbar } from "@/components/navbar"
 import { Badge } from "@/components/ui/badge"
 
+type LeaderboardPlayer = {
+  id: string
+  username: string | null
+  display_name: string | null
+  avatar_url: string | null
+  total_score: number
+  games_played: number
+  level?: number | null
+  best_streak?: number | null
+}
+
 export default async function LeaderboardPage() {
   const supabase = await createClient()
 
-  const { data: leaderboard } = await supabase
+  const primary = await supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, total_score, games_played, level, best_streak")
     .gt("total_score", 0)
     .order("total_score", { ascending: false })
     .limit(50)
+
+  let leaderboard: LeaderboardPlayer[] | null = primary.data as LeaderboardPlayer[] | null
+  let error = primary.error
+
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    const fallback = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url, total_score, games_played")
+      .gt("total_score", 0)
+      .order("total_score", { ascending: false })
+      .limit(50)
+
+    leaderboard = fallback.data as LeaderboardPlayer[] | null
+    error = fallback.error
+  }
 
   const leaders = leaderboard ?? []
   const topThree = leaders.slice(0, 3)
@@ -35,7 +61,13 @@ export default async function LeaderboardPage() {
             </p>
           </div>
 
-          {leaders.length === 0 ? (
+          {error ? (
+            <div className="glass-panel rounded-xl p-12 text-center">
+              <Trophy className="mx-auto mb-4 size-12 text-muted-foreground" />
+              <p className="font-medium">Leaderboard could not load</p>
+              <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+            </div>
+          ) : leaders.length === 0 ? (
             <div className="glass-panel rounded-xl p-12 text-center">
               <Trophy className="mx-auto mb-4 size-12 text-muted-foreground" />
               <p className="font-medium">No scores yet</p>
@@ -83,7 +115,7 @@ export default async function LeaderboardPage() {
   )
 }
 
-function PodiumCard({ player, rank }: { player: any; rank: number }) {
+function PodiumCard({ player, rank }: { player: LeaderboardPlayer; rank: number }) {
   return (
     <div className="glass-panel rounded-xl p-5">
       <div className="mb-5 flex items-center justify-between">
