@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url TEXT,
   total_score INTEGER DEFAULT 0,
   games_played INTEGER DEFAULT 0,
+  xp INTEGER DEFAULT 0,
+  level INTEGER DEFAULT 1,
+  current_streak INTEGER DEFAULT 0,
+  best_streak INTEGER DEFAULT 0,
+  role TEXT DEFAULT 'player' CHECK (role IN ('player', 'admin')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -32,6 +37,15 @@ CREATE TABLE IF NOT EXISTS public.categories (
 
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "categories_select_all" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "categories_admin_insert" ON public.categories FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "categories_admin_update" ON public.categories FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "categories_admin_delete" ON public.categories FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
 
 -- Questions table
 CREATE TABLE IF NOT EXISTS public.questions (
@@ -41,6 +55,7 @@ CREATE TABLE IF NOT EXISTS public.questions (
   correct_answer TEXT NOT NULL,
   wrong_answers TEXT[] NOT NULL,
   difficulty INTEGER DEFAULT 1 CHECK (difficulty >= 1 AND difficulty <= 3),
+  explanation TEXT,
   media_url TEXT,
   media_type TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -48,6 +63,15 @@ CREATE TABLE IF NOT EXISTS public.questions (
 
 ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "questions_select_all" ON public.questions FOR SELECT USING (true);
+CREATE POLICY "questions_admin_insert" ON public.questions FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "questions_admin_update" ON public.questions FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "questions_admin_delete" ON public.questions FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
 
 -- Game sessions table
 CREATE TABLE IF NOT EXISTS public.game_sessions (
@@ -58,6 +82,10 @@ CREATE TABLE IF NOT EXISTS public.game_sessions (
   total_questions INTEGER DEFAULT 0,
   correct_answers INTEGER DEFAULT 0,
   time_taken INTEGER DEFAULT 0,
+  xp_earned INTEGER DEFAULT 0,
+  max_streak INTEGER DEFAULT 0,
+  answers JSONB DEFAULT '[]'::JSONB,
+  status TEXT DEFAULT 'completed' CHECK (status IN ('in_progress', 'completed')),
   completed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -66,6 +94,46 @@ ALTER TABLE public.game_sessions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "game_sessions_select_own" ON public.game_sessions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "game_sessions_insert_own" ON public.game_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "game_sessions_update_own" ON public.game_sessions FOR UPDATE USING (auth.uid() = user_id);
+
+-- Bookmarked categories/quizzes
+CREATE TABLE IF NOT EXISTS public.bookmarks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  category_id UUID REFERENCES public.categories(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, category_id)
+);
+
+ALTER TABLE public.bookmarks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "bookmarks_select_own" ON public.bookmarks FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "bookmarks_insert_own" ON public.bookmarks FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "bookmarks_delete_own" ON public.bookmarks FOR DELETE USING (auth.uid() = user_id);
+
+-- Achievement catalog and user unlocks
+CREATE TABLE IF NOT EXISTS public.achievements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  icon TEXT DEFAULT 'trophy',
+  xp_reward INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "achievements_select_all" ON public.achievements FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS public.user_achievements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  achievement_id UUID REFERENCES public.achievements(id) ON DELETE CASCADE,
+  unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, achievement_id)
+);
+
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_achievements_select_own" ON public.user_achievements FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "user_achievements_insert_own" ON public.user_achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Leaderboard view
 CREATE OR REPLACE VIEW public.leaderboard AS
@@ -76,6 +144,8 @@ SELECT
   p.avatar_url,
   p.total_score,
   p.games_played,
+  p.level,
+  p.best_streak,
   RANK() OVER (ORDER BY p.total_score DESC) as rank
 FROM public.profiles p
 WHERE p.total_score > 0

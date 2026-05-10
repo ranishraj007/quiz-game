@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ArrowLeft, BadgeCheck } from "lucide-react"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -53,10 +54,36 @@ export default function SignUpPage() {
     }
   }
 
+  const handleGoogleSignUp = async () => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/categories`,
+      },
+    })
+  }
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
-        <Card className="border-border bg-card">
+    <div className="grid min-h-screen bg-background lg:grid-cols-[1fr_0.9fr]">
+      <div className="hidden items-center justify-center border-r border-border/60 p-10 lg:flex">
+        <div className="max-w-lg">
+          <Link href="/" className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="size-4" />
+            Back home
+          </Link>
+          <BadgeCheck className="mb-6 size-10 text-primary" />
+          <h1 className="font-[family-name:var(--font-display)] text-5xl font-bold tracking-tight">
+            Build your player profile.
+          </h1>
+          <p className="mt-5 text-lg leading-8 text-muted-foreground">
+            Create an account for saved history, ranked scores, achievements, and future multiplayer features.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+        <Card className="glass-panel">
           <CardHeader className="text-center">
             <Link href="/" className="font-[family-name:var(--font-display)] text-2xl font-bold mb-2 block">
               QuizVerse
@@ -113,6 +140,9 @@ export default function SignUpPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Sign Up"}
                 </Button>
+                <Button type="button" variant="outline" className="w-full bg-transparent" onClick={handleGoogleSignUp}>
+                  Continue with Google
+                </Button>
               </div>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
@@ -123,6 +153,7 @@ export default function SignUpPage() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   )

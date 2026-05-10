@@ -103,3 +103,14 @@ CROSS JOIN (VALUES
   ('What is the highest female singing voice?', 'Soprano', ARRAY['Alto', 'Mezzo-soprano', 'Contralto'], 2)
 ) AS q(question, correct_answer, wrong_answers, difficulty)
 WHERE c.slug = 'music';
+
+-- Add lightweight explanations for immediate answer feedback.
+UPDATE public.questions
+SET explanation = 'The correct answer is ' || correct_answer || '. Use the feedback to reinforce the fact before the next timed question.'
+WHERE explanation IS NULL;
+
+INSERT INTO public.achievements (code, name, description, icon, xp_reward) VALUES
+  ('first_run', 'First Run', 'Complete your first quiz attempt.', 'play', 50),
+  ('combo_builder', 'Combo Builder', 'Reach a streak of three correct answers.', 'flame', 100),
+  ('point_hunter', 'Point Hunter', 'Score 5,000 total points.', 'trophy', 250)
+ON CONFLICT (code) DO NOTHING;

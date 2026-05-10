@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ArrowLeft, Sparkles } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -38,10 +39,34 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/categories`,
+      },
+    })
+  }
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
-        <Card className="border-border bg-card">
+    <div className="grid min-h-screen bg-background lg:grid-cols-[1fr_0.9fr]">
+      <div className="hidden items-center justify-center border-r border-border/60 p-10 lg:flex">
+        <div className="max-w-lg">
+          <Link href="/" className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="size-4" />
+            Back home
+          </Link>
+          <Sparkles className="mb-6 size-10 text-primary" />
+          <h1 className="font-[family-name:var(--font-display)] text-5xl font-bold tracking-tight">Resume your run.</h1>
+          <p className="mt-5 text-lg leading-8 text-muted-foreground">
+            Sign in to save attempts, build streaks, track XP, and climb the leaderboard.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+        <Card className="glass-panel">
           <CardHeader className="text-center">
             <Link href="/" className="font-[family-name:var(--font-display)] text-2xl font-bold mb-2 block">
               QuizVerse
@@ -77,6 +102,9 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
+                <Button type="button" variant="outline" className="w-full bg-transparent" onClick={handleGoogleLogin}>
+                  Continue with Google
+                </Button>
               </div>
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{" "}
@@ -87,6 +115,7 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   )

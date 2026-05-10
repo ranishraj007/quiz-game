@@ -1,73 +1,100 @@
+import { Medal, Sparkles, Trophy } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { Navbar } from "@/components/navbar"
-import { Trophy, Medal } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export default async function LeaderboardPage() {
   const supabase = await createClient()
 
   const { data: leaderboard } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, total_score, games_played")
+    .select("id, username, display_name, avatar_url, total_score, games_played, level, best_streak")
     .gt("total_score", 0)
     .order("total_score", { ascending: false })
     .limit(50)
 
-  const getRankStyle = (rank: number) => {
-    if (rank === 1) return "bg-yellow-500/20 border-yellow-500/50"
-    if (rank === 2) return "bg-gray-400/20 border-gray-400/50"
-    if (rank === 3) return "bg-amber-600/20 border-amber-600/50"
-    return "bg-card border-border"
-  }
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="w-5 h-5 text-yellow-500" />
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />
-    if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />
-    return <span className="text-sm font-mono text-muted-foreground">#{rank}</span>
-  }
+  const leaders = leaderboard ?? []
+  const topThree = leaders.slice(0, 3)
 
   return (
     <main className="min-h-screen pt-16">
       <Navbar />
 
-      <section className="py-16 px-4">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold text-center mb-4">Leaderboard</h1>
-          <p className="text-muted-foreground text-center mb-12">Top players across all categories</p>
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 text-center">
+            <Badge className="mb-4 bg-primary/15 text-primary hover:bg-primary/20">
+              <Trophy className="mr-1 size-3.5" />
+              Ranked players
+            </Badge>
+            <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight md:text-6xl">
+              Leaderboard
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+              Top players by all-time score. Streaks, XP, and category mastery all feed the climb.
+            </p>
+          </div>
 
-          {!leaderboard || leaderboard.length === 0 ? (
-            <div className="text-center py-12 bg-card rounded-xl border border-border">
-              <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">No scores yet. Be the first to play!</p>
+          {leaders.length === 0 ? (
+            <div className="glass-panel rounded-xl p-12 text-center">
+              <Trophy className="mx-auto mb-4 size-12 text-muted-foreground" />
+              <p className="font-medium">No scores yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">Be the first player to post a run.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {leaderboard.map((player, index) => (
-                <div
-                  key={player.id}
-                  className={`flex items-center gap-4 p-4 rounded-xl border ${getRankStyle(index + 1)}`}
-                >
-                  <div className="w-8 flex justify-center">{getRankIcon(index + 1)}</div>
-
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                    {(player.display_name || player.username || "?").charAt(0).toUpperCase()}
+            <>
+              <div className="mb-5 grid gap-3 md:grid-cols-3">
+                {topThree.map((player, index) => (
+                  <PodiumCard key={player.id} player={player} rank={index + 1} />
+                ))}
+              </div>
+              <div className="overflow-hidden rounded-xl border border-white/15 bg-card/75 backdrop-blur-xl">
+                {leaders.map((player, index) => (
+                  <div
+                    key={player.id}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-b border-white/10 p-4 last:border-b-0"
+                  >
+                    <div className="flex size-10 items-center justify-center rounded-md bg-background/70 font-mono font-bold">
+                      #{index + 1}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-11 items-center justify-center rounded-full bg-primary/15 font-bold text-primary">
+                        {(player.display_name || player.username || "?").charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium">{player.display_name || player.username}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Level {player.level ?? 1} · {player.games_played} games · best streak {player.best_streak ?? 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-xl font-bold text-primary">{player.total_score.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">points</p>
+                    </div>
                   </div>
-
-                  <div className="flex-1">
-                    <p className="font-medium">{player.display_name || player.username}</p>
-                    <p className="text-sm text-muted-foreground">{player.games_played} games played</p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-primary">{player.total_score.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">points</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </section>
     </main>
+  )
+}
+
+function PodiumCard({ player, rank }: { player: any; rank: number }) {
+  return (
+    <div className="glass-panel rounded-xl p-5">
+      <div className="mb-5 flex items-center justify-between">
+        {rank === 1 ? <Trophy className="size-7 text-accent" /> : <Medal className="size-7 text-primary" />}
+        <Badge variant="outline">#{rank}</Badge>
+      </div>
+      <p className="text-lg font-semibold">{player.display_name || player.username}</p>
+      <div className="mt-3 flex items-end gap-2">
+        <span className="font-mono text-3xl font-bold">{player.total_score.toLocaleString()}</span>
+        <Sparkles className="mb-1 size-4 text-primary" />
+      </div>
+    </div>
   )
 }
