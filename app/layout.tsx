@@ -1,18 +1,32 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Space_Grotesk } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
-const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] })
-
 export const metadata: Metadata = {
-  title: "QuizVerse - Immersive 3D Quiz Game",
-  description: "Explore immersive 3D worlds while testing your knowledge. Each category is a new adventure.",
-  generator: "v0.app",
+  metadataBase: new URL("https://quizverse.example.com"),
+  title: {
+    default: "QuizVerse - Interactive Quiz Arena",
+    template: "%s | QuizVerse",
+  },
+  description:
+    "A modern quiz-game platform with timed challenges, XP, streaks, leaderboards, profiles, and immersive categories.",
+  applicationName: "QuizVerse",
+  keywords: ["quiz app", "trivia game", "leaderboard", "Supabase", "Next.js"],
+  authors: [{ name: "QuizVerse" }],
+  creator: "QuizVerse",
+  openGraph: {
+    title: "QuizVerse",
+    description: "Timed quiz battles, XP, streaks, achievements, and leaderboard progression.",
+    type: "website",
+    siteName: "QuizVerse",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QuizVerse",
+    description: "Timed quiz battles, XP, streaks, achievements, and leaderboard progression.",
+  },
   icons: {
     icon: [
       {
@@ -33,7 +47,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0f",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#080b12" },
+  ],
 }
 
 export default function RootLayout({
@@ -42,9 +59,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
