@@ -136,7 +136,8 @@ CREATE POLICY "user_achievements_select_own" ON public.user_achievements FOR SEL
 CREATE POLICY "user_achievements_insert_own" ON public.user_achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Leaderboard view
-CREATE OR REPLACE VIEW public.leaderboard AS
+CREATE OR REPLACE VIEW public.leaderboard
+WITH (security_invoker = true) AS
 SELECT 
   p.id,
   p.username,
