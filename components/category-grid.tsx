@@ -1,6 +1,6 @@
 import type React from "react";
 import Link from "next/link";
-import { ArrowRight, Atom, Globe, Heart, Landmark, Music, Sparkles } from "lucide-react";
+import { ArrowRight, Atom, BookOpen, Code2, Cpu, Film, Globe, Heart, Landmark, Music, Sparkles, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -9,6 +9,11 @@ const iconMap: Record<string, React.ReactNode> = {
   heart: <Heart className="w-8 h-8" />,
   atom: <Atom className="w-8 h-8" />,
   landmark: <Landmark className="w-8 h-8" />,
+  code: <Code2 className="w-8 h-8" />,
+  cpu: <Cpu className="w-8 h-8" />,
+  trophy: <Trophy className="w-8 h-8" />,
+  film: <Film className="w-8 h-8" />,
+  book: <BookOpen className="w-8 h-8" />,
   song: <Music className="w-8 h-8" />,
 };
 
@@ -18,6 +23,11 @@ const colorMap: Record<string, string> = {
   health: "bg-health/20 border-health/50 hover:bg-health/30",
   science: "bg-science/20 border-science/50 hover:bg-science/30",
   history: "bg-history/20 border-history/50 hover:bg-history/30",
+  coding: "bg-cyan-500/20 border-cyan-500/50 hover:bg-cyan-500/30",
+  technology: "bg-indigo-500/20 border-indigo-500/50 hover:bg-indigo-500/30",
+  sports: "bg-green-500/20 border-green-500/50 hover:bg-green-500/30",
+  movies: "bg-pink-500/20 border-pink-500/50 hover:bg-pink-500/30",
+  literature: "bg-purple-500/20 border-purple-500/50 hover:bg-purple-500/30",
   song: "bg-country/20 border-country/50 hover:bg-country/30",
 };
 
