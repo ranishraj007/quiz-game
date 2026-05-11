@@ -56,12 +56,13 @@ export default function SignUpPage() {
 
   const handleGoogleSignUp = async () => {
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/categories`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/categories`,
       },
     })
+    if (error) setError(error.message)
   }
 
   return (

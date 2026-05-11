@@ -41,12 +41,13 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/categories`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/categories`,
       },
     })
+    if (error) setError(error.message)
   }
 
   return (
@@ -89,7 +90,12 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
+                  <div className="flex items-center justify-between gap-3">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Input
                     id="password"
                     type="password"
