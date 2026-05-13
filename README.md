@@ -73,8 +73,9 @@ NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/categories
 3. Run `scripts/002_seed_categories_questions.sql`.
 4. Existing projects should also run `scripts/003_upgrade_quizverse_platform.sql`.
 5. Run `scripts/004_expand_categories_questions.sql` for the expanded category and question catalog.
-6. Enable Google OAuth in Supabase Auth if you want social login.
-7. To access `/admin`, set your row in `public.profiles` to `role = 'admin'`.
+6. Run `scripts/006_more_categories_questions.sql` for additional questions plus Art, Food, Nature, and Space categories.
+7. Enable Google OAuth in Supabase Auth if you want social login.
+8. To access `/admin`, set your row in `public.profiles` to `role = 'admin'`.
 
 ## Scripts
 
